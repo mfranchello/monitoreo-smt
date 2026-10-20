@@ -15,7 +15,6 @@
   </style>
 </head>
 <body class="min-h-screen pb-24 md:pb-12">
-
   <!-- Header -->
   <header class="sticky top-0 z-30 bg-slate-900 text-white shadow-md">
     <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between gap-2">
@@ -53,7 +52,6 @@
 
   <!-- Main Container -->
   <main class="max-w-4xl mx-auto px-3 sm:px-4 pt-3 space-y-3.5">
-
     <!-- KPI Strip -->
     <section class="grid grid-cols-4 gap-2">
       <div class="bg-white rounded-2xl p-2.5 shadow-sm border border-slate-200/80">
@@ -84,4 +82,599 @@
         <span class="text-base shrink-0">🚨</span>
         <div class="min-w-0">
           <p class="text-[10px] font-extrabold uppercase tracking-wider text-rose-200">Foco de Alerta Alta</p>
-          <p id="highAlertTitle" class="text-xs sm:text-sm font-bold truncate">El Municipio analiza mult
+          <p id="highAlertTitle" class="text-xs sm:text-sm font-bold truncate">El Municipio analiza multas para Uber y DiDi</p>
+        </div>
+      </div>
+      <button id="btnFilterHighAlerts" type="button" class="shrink-0 px-2.5 py-1 rounded-xl bg-white text-rose-700 font-bold text-xs shadow-sm">Ver</button>
+    </section>
+
+    <!-- VIEW 1: FEED DE NOTICIAS -->
+    <section id="view-feed" class="space-y-3">
+      <div class="bg-white rounded-2xl p-3 shadow-sm border border-slate-200/80 space-y-2">
+        <div class="flex items-center gap-2">
+          <div class="relative flex-1">
+            <input id="searchInput" type="text" placeholder="Buscar por tema, calle o funcionario..." class="w-full pl-8 pr-7 py-2 rounded-xl bg-slate-100 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500">
+            <span class="absolute left-2.5 top-2 text-slate-400 text-xs">🔍</span>
+            <button id="btnClearSearch" type="button" class="hidden absolute right-2.5 top-2 text-slate-400 text-xs font-bold">✕</button>
+          </div>
+          <button id="btnResetFilters" type="button" class="px-2.5 py-2 rounded-xl bg-slate-100 text-slate-600 text-xs font-semibold shrink-0">Limpiar</button>
+        </div>
+        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
+          <button type="button" data-quick="all" class="quick-pill px-3 py-1 rounded-full text-xs font-semibold bg-slate-900 text-white shrink-0">Todas</button>
+          <button type="button" data-quick="alerta:Alto" class="quick-pill px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 shrink-0">🔴 Alerta Alta</button>
+          <button type="button" data-quick="sent:Positivo" class="quick-pill px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 shrink-0">✅ Positivas</button>
+          <button type="button" data-quick="sent:Negativo" class="quick-pill px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 shrink-0">⚠️ Críticas</button>
+        </div>
+      </div>
+      <div id="newsFeedContainer" class="space-y-2.5"></div>
+    </section>
+
+    <!-- VIEW 2: GRÁFICOS / DASHBOARD -->
+    <section id="view-dashboard" class="hidden space-y-3">
+      <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80">
+        <h2 class="text-sm font-bold text-slate-900 mb-2">Tono Editorial vs. Humor Vecinal</h2>
+        <div class="relative h-60"><canvas id="chartSentiment"></canvas></div>
+      </div>
+      <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80">
+        <h2 class="text-sm font-bold text-slate-900 mb-2">Noticias por Área de Gestión</h2>
+        <div class="relative h-60"><canvas id="chartAreas"></canvas></div>
+      </div>
+    </section>
+
+    <!-- VIEW 3: BARRIOS -->
+    <section id="view-barrios" class="hidden space-y-2.5">
+      <div class="bg-white rounded-2xl p-3.5 shadow-sm border border-slate-200/80">
+        <h2 class="text-sm font-bold text-slate-900">Mapa Territorial de Novedades</h2>
+        <p class="text-xs text-slate-500 mt-0.5">Distribución de noticias y reclamos en la capital.</p>
+      </div>
+      <div id="barriosGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5"></div>
+    </section>
+
+    <!-- VIEW 4: GUARDADOS -->
+    <section id="view-saved" class="hidden space-y-2.5">
+      <div class="bg-white rounded-2xl p-3.5 shadow-sm border border-slate-200/80">
+        <h2 class="text-sm font-bold text-slate-900">Notas Guardadas para Seguimiento</h2>
+        <p class="text-xs text-slate-500 mt-0.5">Marcá notas con la estrella (⭐) para leerlas después.</p>
+      </div>
+      <div id="savedFeedContainer" class="space-y-2.5"></div>
+    </section>
+  </main>
+
+  <!-- Bottom Nav (Mobile) -->
+  <nav class="md:hidden fixed bottom-0 inset-x-0 z-30 glass-nav border-t border-slate-200/90 shadow-lg">
+    <div class="grid grid-cols-4 h-16 max-w-md mx-auto">
+      <button type="button" data-tab="feed" class="nav-tab-btn flex flex-col items-center justify-center gap-0.5 text-sky-600 font-bold">
+        <span class="text-lg">📰</span><span class="text-[10px]">Noticias</span>
+      </button>
+      <button type="button" data-tab="dashboard" class="nav-tab-btn flex flex-col items-center justify-center gap-0.5 text-slate-500 font-medium">
+        <span class="text-lg">📊</span><span class="text-[10px]">Pulso</span>
+      </button>
+      <button type="button" data-tab="barrios" class="nav-tab-btn flex flex-col items-center justify-center gap-0.5 text-slate-500 font-medium">
+        <span class="text-lg">📍</span><span class="text-[10px]">Barrios</span>
+      </button>
+      <button type="button" data-tab="saved" class="nav-tab-btn flex flex-col items-center justify-center gap-0.5 text-slate-500 font-medium relative">
+        <span class="text-lg">⭐</span><span class="text-[10px]">Guardados</span>
+        <span id="savedCountMobile" class="hidden absolute top-1.5 right-6 min-w-[16px] h-4 px-1 rounded-full bg-sky-600 text-white text-[9px] font-bold flex items-center justify-center">0</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Toast Notice -->
+  <div id="toastNotice" class="hidden fixed bottom-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-full bg-slate-900 text-white text-xs font-semibold shadow-lg">Listo</div>
+
+  <script>
+    const SHEET_ID = "1e9bv4pk9iKfgvqpxbaf_h2GjHnfSmsTaME_j4wM_tEA";
+    const BASE_NEWS = [
+      {
+        id: "smt-149",
+        fecha: "2026-10-19",
+        medio: "Tendencia de Noticias",
+        titular: "Chahla volvió a ponerse el guardapolvo y atendió a mujeres en el Piso Rosa de la Asistencia Pública",
+        resumen: "En el Día Mundial contra el Cáncer de Mama, la intendenta y médica ginecóloga Rossana Chahla encabezó controles médicos directos y ecografías mamarias a vecinas en el Piso Rosa de la Asistencia Pública (Chacabuco 239).",
+        sentimiento: "Positivo",
+        url: "https://tendenciadenoticias.com.ar/tendencias/chahla-volvio-a-ponerse-el-guardapolvo-y-atendio-a-mujeres-en-el-piso-rosa-de-la-asistencia-publica",
+        area: "Salud",
+        zona: "Microcentro",
+        sentCiudadano: "Positivo",
+        comentarios: "Reconocimiento y elogios de pacientes por la atención médica directa de la intendenta en el consultorio y consultas por turnos de mamografías.",
+        alerta: "Bajo"
+      },
+      {
+        id: "smt-148",
+        fecha: "2026-10-19",
+        medio: "El Tucumano",
+        titular: "El nuevo Refugio León XIV albergará a delegaciones deportivas de todo el país en San Miguel de Tucumán",
+        resumen: "La intendenta Rossana Chahla inauguró las renovadas instalaciones del albergue municipal León XIV en el Complejo Ledesma (25 de Mayo 971), con capacidad para 94 personas y aire frío/calor, albergando a 12 selecciones del Torneo Argentino C17 de Futsal.",
+        sentimiento: "Positivo",
+        url: "https://www.eltucumano.com/noticia/actualidad/326378/el-nuevo-refugio-leon-xiv-albergara-a-delegaciones-deportivas-de-todo-el-pais-en-san-miguel-de-tucuman",
+        area: "Cultura y Eventos",
+        zona: "Microcentro",
+        sentCiudadano: "Positivo",
+        comentarios: "Gran entusiasmo de delegaciones juveniles de 12 provincias y reconocimiento vecinal por recuperar un espacio del Complejo Ledesma que estaba en pésimas condiciones.",
+        alerta: "Bajo"
+      },
+      {
+        id: "smt-147",
+        fecha: "2026-10-19",
+        medio: "La Gaceta",
+        titular: "El Municipio analiza multas para Uber y DiDi y defiende el registro digital",
+        resumen: "El concejal Carlos Arnedo confirmó que Uber y DiDi no se inscribieron formalmente en la capital (\"brillan por su ausencia\") y anticipó multas, ratificando la obligatoriedad del padrón digital municipal para choferes ante los reclamos.",
+        sentimiento: "Neutral",
+        url: "https://www.lagaceta.com.ar/nota/1158743/politica/municipio-analiza-multas-para-uber-didi-defiende-registro-digital.html",
+        area: "Transporte y Tránsito",
+        zona: "General",
+        sentCiudadano: "Mixto",
+        comentarios: "Fuerte debate vecinal: usuarios defienden la conveniencia de las aplicaciones, conductores reclaman por los plazos de inscripción y taxistas exigen sanciones.",
+        alerta: "Alto"
+      },
+      {
+        id: "smt-143",
+        fecha: "2026-10-17",
+        medio: "Los Primeros",
+        titular: "Día de la Lealtad: Jaldo encabezó un multitudinario acto, desafió a la oposición y ratificó su liderazgo en el PJ",
+        resumen: "La intendenta Rossana Chahla fue una de las tres únicas oradoras junto a Osvaldo Jaldo y Miguel Acevedo ante 50.000 personas en el Hipódromo, advirtiendo sobre el riesgo para los derechos sociales frente al ajuste nacional.",
+        sentimiento: "Positivo",
+        url: "https://www.losprimeros.tv/politica/dia-de-la-lealtad--jaldo-encabezo-un-multitudinario-acto--desafio-a-la-oposicion-y-ratifico-su-liderazgo-en-el-pj_a6ad402395367b0a878f99bcc",
+        area: "Política e Institucional",
+        zona: "Parque 9 de Julio / Hipódromo",
+        sentCiudadano: "Mixto",
+        comentarios: "Apoyo de la militancia peronista a la unidad provincial y críticas de usuarios opositores por la movilización en el Hipódromo.",
+        alerta: "Medio"
+      },
+      {
+        id: "smt-144",
+        fecha: "2026-10-16",
+        medio: "La Gaceta",
+        titular: "253 edificios sin final de obra",
+        resumen: "Columna editorial que advierte sobre los 253 edificios habitados en San Miguel de Tucumán que carecen de certificado final de obra y analiza el pedido en el Concejo Deliberante para auditar las condiciones de seguridad edilicia.",
+        sentimiento: "Negativo",
+        url: "https://www.lagaceta.com.ar/nota/1158432/opinion/253-edificios-sin-final-obra.html",
+        area: "Obras Públicas",
+        zona: "General",
+        sentCiudadano: "Negativo",
+        comentarios: "Reclamos vecinales por mayor fiscalización municipal a constructoras y preocupación por la seguridad tras la explosión en calle Monteagudo.",
+        alerta: "Alto"
+      },
+      {
+        id: "smt-145",
+        fecha: "2026-10-16",
+        medio: "Los Primeros",
+        titular: "Goycochea, el héroe de los penales de Italia 90, fue declarado Visitante Ilustre de la capital tucumana",
+        resumen: "La intendenta Rossana Chahla recibió en la sede municipal al exarquero de la Selección Argentina Sergio Goycochea y le entregó el decreto que lo declara Visitante Ilustre de la Ciudad previo a su disertación en la UNT.",
+        sentimiento: "Positivo",
+        url: "https://www.losprimeros.tv/actualidad/goycochea--el-heroe-de-los-penales-de-italia-90--fue-declarado-visitante-ilustre-de-la-capital-tucumana-_a6ad23e2be560f3bfda3081ad",
+        area: "Cultura y Eventos",
+        zona: "Microcentro",
+        sentCiudadano: "Positivo",
+        comentarios: "Recepción positiva en redes sociales por el reconocimiento deportivo e institucional previo a su charla universitaria.",
+        alerta: "Bajo"
+      },
+      {
+        id: "smt-139",
+        fecha: "2026-10-16",
+        medio: "La Gaceta",
+        titular: "En Villa Urquiza: el municipio de San Miguel de Tucumán erradicó un basural e instaló juegos infantiles",
+        resumen: "La Municipalidad recuperó la plaza Teresa de Calcuta en República del Líbano y Paraguay, erradicando un basural histórico junto a las vías e instalando juegos infantiles, bacheo y pintura.",
+        sentimiento: "Positivo",
+        url: "https://www.lagaceta.com.ar/nota/1158425/politica/villa-urquiza-municipio-san-miguel-tucuman-erradico-basural-e-instalo-juegos-infantiles.html",
+        area: "Ambiente",
+        zona: "Villa Urquiza",
+        sentCiudadano: "Positivo",
+        comentarios: "Agradecimiento vecinal por la limpieza del basural histórico junto a las vías y pedido de control para evitar que vuelvan a arrojar residuos.",
+        alerta: "Bajo"
+      },
+      {
+        id: "smt-140",
+        fecha: "2026-10-16",
+        medio: "El Tucumano",
+        titular: "Según un informe, San Miguel de Tucumán presenta una profunda disparidad administrativa para habilitar negocios",
+        resumen: "El Índice FÁCIL Productivo 2026 (IDESA/BID) destacó la agilidad local en trámites simples (50,2 pts) pero marcó trabas en proyectos complejos (28 pts), impulsando el Decreto 0297/SIM/2026 de simplificación técnica.",
+        sentimiento: "Neutral",
+        url: "https://www.eltucumano.com/noticia/actualidad/326228/segun-un-informe-san-miguel-de-tucuman-presenta-una-profunda-disparidad-administrativa-para-habilitar-negocios",
+        area: "Política e Institucional",
+        zona: "General",
+        sentCiudadano: "Negativo",
+        comentarios: "Quejas de comerciantes y profesionales por la burocracia en Bomberos y Catastro para locales grandes, aunque valoran la ventanilla digital.",
+        alerta: "Medio"
+      },
+      {
+        id: "smt-141",
+        fecha: "2026-10-16",
+        medio: "El Tucumano",
+        titular: "Nueva semana de esterilización gratuita para mascotas en San Miguel de Tucumán",
+        resumen: "La Dirección de Población Animal brindará castraciones gratuitas para perros y gatos del 19 al 23 de octubre en quirófanos móviles ubicados en Barrio Independencia y Villa Urquiza.",
+        sentimiento: "Positivo",
+        url: "https://www.eltucumano.com/noticia/libre/326244/nueva-semana-de-esterilizacion-gratuita-para-mascotas-en-san-miguel-de-tucuman",
+        area: "Salud",
+        zona: "Villa Urquiza",
+        sentCiudadano: "Positivo",
+        comentarios: "Alta demanda de turnos en los comentarios y pedidos de vecinos para llevar el tráiler veterinario a barrios de la periferia.",
+        alerta: "Bajo"
+      },
+      {
+        id: "smt-132",
+        fecha: "2026-10-15",
+        medio: "El Tucumano",
+        titular: "Con una obra de 5.500 metros, San Miguel de Tucumán apunta a mitigar los efectos de El Niño",
+        resumen: "Rossana Chahla y Miguel Acevedo supervisaron la ejecución de 5.500 metros de canales, cunetas y alcantarillas en barrio Margaritas con una inversión de $1.543 millones para reducir un 60% los anegamientos.",
+        sentimiento: "Positivo",
+        url: "https://www.eltucumano.com/noticia/actualidad/326163/con-una-obra-de-5500-metros-san-miguel-de-tucuman-apunta-a-mitigar-los-efectos-de-el-nino",
+        area: "Obras Públicas",
+        zona: "Barrio Margaritas",
+        sentCiudadano: "Positivo",
+        comentarios: "Valoración positiva por las obras hídricas preventivas en una zona históricamente inundable del noreste capitalino.",
+        alerta: "Medio"
+      }
+    ];
+
+    let newsItems = [...BASE_NEWS];
+    let savedIds = new Set();
+    let currentTab = "feed";
+    let quickFilter = "all";
+    let searchQuery = "";
+    let chart1 = null;
+    let chart2 = null;
+
+    function showToast(msg) {
+      const t = document.getElementById("toastNotice");
+      if (!t) return;
+      t.textContent = msg;
+      t.classList.remove("hidden");
+      setTimeout(() => t.classList.add("hidden"), 2200);
+    }
+
+    function getFilteredNews() {
+      return newsItems.filter(item => {
+        if (quickFilter.startsWith("alerta:")) {
+          if (item.alerta !== quickFilter.split(":")[1]) return false;
+        } else if (quickFilter.startsWith("sent:")) {
+          if (item.sentimiento !== quickFilter.split(":")[1]) return false;
+        }
+        if (searchQuery.trim()) {
+          const q = searchQuery.toLowerCase();
+          const str = `${item.titular} ${item.resumen} ${item.medio} ${item.area} ${item.zona}`.toLowerCase();
+          if (!str.includes(q)) return false;
+        }
+        return true;
+      });
+    }
+
+    function createCardHTML(item) {
+      const isSaved = savedIds.has(item.id);
+      const isHigh = item.alerta === "Alto";
+      const isPos = item.sentimiento === "Positivo";
+      const isNeg = item.sentimiento === "Negativo";
+      return `
+        <article class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/90 space-y-2">
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-white">${item.medio}</span>
+              <span class="text-[11px] text-slate-400 font-medium">${item.fecha}</span>
+              <span class="px-2 py-0.5 rounded text-[10px] bg-slate-100 text-slate-700">${item.area}</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${isHigh ? 'bg-rose-600 text-white' : 'bg-slate-200 text-slate-700'}">Alerta ${item.alerta}</span>
+              <button data-action="toggle-save" data-id="${item.id}" class="w-7 h-7 rounded-full flex items-center justify-center text-sm ${isSaved ? 'bg-amber-100 text-amber-500' : 'bg-slate-100 text-slate-400'}">
+                ${isSaved ? '★' : '☆'}
+              </button>
+            </div>
+          </div>
+          <h3 class="text-sm sm:text-base font-bold text-slate-900 leading-snug">${item.titular}</h3>
+          <p class="text-xs sm:text-sm text-slate-600 leading-relaxed">${item.resumen}</p>
+          <div class="rounded-xl bg-slate-50 border border-slate-200/80 p-2.5 text-xs text-slate-600 space-y-1">
+            <div class="flex items-center justify-between gap-1 flex-wrap font-semibold text-[11px]">
+              <span class="${isPos ? 'text-emerald-700' : isNeg ? 'text-rose-700' : 'text-amber-700'}">Tono: ${item.sentimiento}</span>
+              <span class="text-sky-700">📍 ${item.zona}</span>
+            </div>
+            <p class="text-[11px]"><strong class="text-slate-700">Comentarios:</strong> ${item.comentarios}</p>
+          </div>
+          <div class="pt-1 flex items-center justify-between gap-2 border-t border-slate-100 text-xs">
+            <button data-action="copy" data-id="${item.id}" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold flex items-center gap-1">
+              📋 Copiar
+            </button>
+            <a href="${item.url}" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-xl bg-sky-50 text-sky-700 font-bold hover:bg-sky-100">
+              Leer nota ↗
+            </a>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderFeed() {
+      const items = getFilteredNews();
+      const container = document.getElementById("newsFeedContainer");
+      if (!container) return;
+      if (!items.length) {
+        container.innerHTML = `<div class="bg-white rounded-2xl p-6 text-center text-xs text-slate-500">No se encontraron noticias con los filtros actuales.</div>`;
+        return;
+      }
+      container.innerHTML = items.map(createCardHTML).join("");
+    }
+
+    function renderSaved() {
+      const savedItems = newsItems.filter(n => savedIds.has(n.id));
+      const container = document.getElementById("savedFeedContainer");
+      if (!container) return;
+      if (!savedItems.length) {
+        container.innerHTML = `<div class="bg-white rounded-2xl p-6 text-center text-xs text-slate-500">No tenés noticias guardadas. Tocá la estrella en cualquier nota para guardarla acá.</div>`;
+        return;
+      }
+      container.innerHTML = savedItems.map(createCardHTML).join("");
+    }
+
+    function renderBarrios() {
+      const map = {};
+      newsItems.forEach(n => {
+        const z = n.zona || "General";
+        map[z] = (map[z] || 0) + 1;
+      });
+      const entries = Object.entries(map).sort((a,b) => b[1] - a[1]);
+      const container = document.getElementById("barriosGrid");
+      if (!container) return;
+      container.innerHTML = entries.map(([zona, count]) => `
+        <div class="bg-white rounded-2xl p-3.5 shadow-sm border border-slate-200/80 flex items-center justify-between">
+          <div>
+            <p class="text-xs font-bold text-slate-900">📍 ${zona}</p>
+            <p class="text-[11px] text-slate-500">${count} ${count === 1 ? 'publicación' : 'publicaciones'}</p>
+          </div>
+          <span class="px-2.5 py-1 rounded-full text-xs font-extrabold bg-sky-100 text-sky-800">${count}</span>
+        </div>
+      `).join("");
+    }
+
+    function renderKPIs() {
+      const total = newsItems.length;
+      const pos = newsItems.filter(n => n.sentimiento === "Positivo").length;
+      const neu = newsItems.filter(n => n.sentimiento === "Neutral").length;
+      const neg = newsItems.filter(n => n.sentimiento === "Negativo").length;
+      
+      const elTotal = document.getElementById("kpiTotal");
+      if (elTotal) elTotal.textContent = total;
+      
+      const elPosPct = document.getElementById("kpiPosPct");
+      if (elPosPct) elPosPct.textContent = total ? Math.round((pos/total)*100) + "%" : "0%";
+      const elPosCount = document.getElementById("kpiPosCount");
+      if (elPosCount) elPosCount.textContent = `${pos} notas`;
+
+      const elNeuPct = document.getElementById("kpiNeuPct");
+      if (elNeuPct) elNeuPct.textContent = total ? Math.round((neu/total)*100) + "%" : "0%";
+      const elNeuCount = document.getElementById("kpiNeuCount");
+      if (elNeuCount) elNeuCount.textContent = `${neu} notas`;
+
+      const elNegPct = document.getElementById("kpiNegPct");
+      if (elNegPct) elNegPct.textContent = total ? Math.round((neg/total)*100) + "%" : "0%";
+      const elNegCount = document.getElementById("kpiNegCount");
+      if (elNegCount) elNegCount.textContent = `${neg} notas`;
+
+      const high = newsItems.find(n => n.alerta === "Alto");
+      const elHigh = document.getElementById("highAlertTitle");
+      if (high && elHigh) elHigh.textContent = high.titular;
+
+      const savedCount = savedIds.size;
+      const elDesk = document.getElementById("savedCountDesktop");
+      if (elDesk) elDesk.textContent = savedCount;
+      const mBadge = document.getElementById("savedCountMobile");
+      if (mBadge) {
+        mBadge.textContent = savedCount;
+        mBadge.classList.toggle("hidden", savedCount === 0);
+      }
+    }
+
+    function renderCharts() {
+      if (typeof Chart === "undefined") return;
+      const pos = newsItems.filter(n => n.sentimiento === "Positivo").length;
+      const neu = newsItems.filter(n => n.sentimiento === "Neutral").length;
+      const neg = newsItems.filter(n => n.sentimiento === "Negativo").length;
+      const canvas1 = document.getElementById("chartSentiment");
+      if (canvas1) {
+        const ctx1 = canvas1.getContext("2d");
+        if (chart1) chart1.destroy();
+        chart1 = new Chart(ctx1, {
+          type: "bar",
+          data: {
+            labels: ["Positivo", "Neutral", "Crítico"],
+            datasets: [{ label: "Notas", data: [pos, neu, neg], backgroundColor: ["#10b981", "#f59e0b", "#f43f5e"], borderRadius: 6 }]
+          },
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        });
+      }
+      const areas = ["Obras Públicas", "Transporte y Tránsito", "Salud", "Ambiente", "Cultura y Eventos", "Política e Institucional"];
+      const areaCounts = areas.map(a => newsItems.filter(n => n.area === a).length);
+      const canvas2 = document.getElementById("chartAreas");
+      if (canvas2) {
+        const ctx2 = canvas2.getContext("2d");
+        if (chart2) chart2.destroy();
+        chart2 = new Chart(ctx2, {
+          type: "bar",
+          data: {
+            labels: areas,
+            datasets: [{ label: "Volumen", data: areaCounts, backgroundColor: "#0284c7", borderRadius: 6 }]
+          },
+          options: { indexAxis: "y", responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+        });
+      }
+    }
+
+    function renderAll() {
+      renderKPIs();
+      if (currentTab === "feed") renderFeed();
+      if (currentTab === "saved") renderSaved();
+      if (currentTab === "barrios") renderBarrios();
+      if (currentTab === "dashboard") renderCharts();
+    }
+
+    function switchTab(tab) {
+      currentTab = tab;
+      ["feed", "dashboard", "barrios", "saved"].forEach(t => {
+        const el = document.getElementById(`view-${t}`);
+        if (el) el.classList.toggle("hidden", t !== tab);
+      });
+      document.querySelectorAll(".nav-tab-btn").forEach(btn => {
+        const isTarget = btn.getAttribute("data-tab") === tab;
+        if (btn.closest("header")) {
+          btn.className = isTarget ? "nav-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-sky-600 text-white" : "nav-tab-btn px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-300 hover:bg-slate-700/60";
+        } else {
+          btn.className = isTarget ? "nav-tab-btn flex flex-col items-center justify-center gap-0.5 text-sky-600 font-bold relative" : "nav-tab-btn flex flex-col items-center justify-center gap-0.5 text-slate-500 font-medium relative";
+        }
+      });
+      renderAll();
+    }
+
+    // JSONP Google Sheet Synchronization (bypasses CORS restrictions)
+    function syncFromGoogleSheets() {
+      const badge = document.getElementById("syncBadge");
+      if (badge) badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span> Sincronizando...';
+
+      window.handleSheetResponse = function(data) {
+        try {
+          if (!data || !data.table || !data.table.rows) return;
+          const rows = data.table.rows;
+          const parsed = [];
+          rows.forEach((r, idx) => {
+            const c = r.c;
+            if (!c || !c[0] || !c[2]) return;
+            const fecha = c[0] ? (c[0].f || String(c[0].v || "")) : "";
+            const medio = c[1] && c[1].v ? String(c[1].v) : "General";
+            const titular = c[2] && c[2].v ? String(c[2].v) : "";
+            const resumen = c[3] && c[3].v ? String(c[3].v) : "";
+            const sent = c[4] && c[4].v ? String(c[4].v) : "Neutral";
+            const url = c[5] && c[5].v ? String(c[5].v) : "https://docs.google.com/spreadsheets/d/1e9bv4pk9iKfgvqpxbaf_h2GjHnfSmsTaME_j4wM_tEA/edit";
+            const area = c[6] && c[6].v ? String(c[6].v) : "Servicios Públicos";
+            const zona = c[7] && c[7].v ? String(c[7].v) : "General";
+            const sentVec = c[8] && c[8].v ? String(c[8].v) : "Mixto";
+            const com = c[9] && c[9].v ? String(c[9].v) : "Sin comentarios registrados.";
+            const alerta = c[10] && c[10].v ? String(c[10].v) : "Bajo";
+
+            if (!titular || titular.toLowerCase().includes("sin novedades")) return;
+            parsed.unshift({
+              id: "sheet-" + idx + "-" + fecha,
+              fecha, medio, titular, resumen,
+              sentimiento: sent, url, area, zona,
+              sentCiudadano: sentVec, comentarios: com, alerta
+            });
+          });
+
+          if (parsed.length > 0) {
+            newsItems = parsed;
+            renderAll();
+            if (badge) badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Sincronizado (' + newsItems.length + ')';
+            showToast("Planilla sincronizada en vivo (" + newsItems.length + " notas)");
+          }
+        } catch (e) {
+          if (badge) badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> En vivo';
+        }
+      };
+
+      const old = document.getElementById("jsonp-sheet");
+      if (old) old.remove();
+      const s = document.createElement("script");
+      s.id = "jsonp-sheet";
+      s.src = "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/gviz/tq?tqx=responseHandler:handleSheetResponse&t=" + Date.now();
+      s.onerror = function() {
+        if (badge) badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> En vivo';
+      };
+      document.body.appendChild(s);
+    }
+
+    function initListeners() {
+      document.querySelectorAll(".nav-tab-btn").forEach(b => {
+        b.addEventListener("click", () => switchTab(b.getAttribute("data-tab")));
+      });
+      document.querySelectorAll(".quick-pill").forEach(p => {
+        p.addEventListener("click", () => {
+          quickFilter = p.getAttribute("data-quick");
+          document.querySelectorAll(".quick-pill").forEach(btn => {
+            btn.className = btn.getAttribute("data-quick") === quickFilter
+              ? "quick-pill px-3 py-1 rounded-full text-xs font-semibold bg-slate-900 text-white shrink-0"
+              : "quick-pill px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 shrink-0";
+          });
+          renderFeed();
+        });
+      });
+      const btnHigh = document.getElementById("btnFilterHighAlerts");
+      if (btnHigh) {
+        btnHigh.addEventListener("click", () => {
+          quickFilter = "alerta:Alto";
+          switchTab("feed");
+        });
+      }
+      const btnSync = document.getElementById("btnSync");
+      if (btnSync) btnSync.addEventListener("click", syncFromGoogleSheets);
+
+      const searchInput = document.getElementById("searchInput");
+      const btnClear = document.getElementById("btnClearSearch");
+      if (searchInput) {
+        searchInput.addEventListener("input", (e) => {
+          searchQuery = e.target.value;
+          if (btnClear) btnClear.classList.toggle("hidden", !searchQuery);
+          renderFeed();
+        });
+      }
+      if (btnClear) {
+        btnClear.addEventListener("click", () => {
+          if (searchInput) searchInput.value = "";
+          searchQuery = "";
+          btnClear.classList.add("hidden");
+          renderFeed();
+        });
+      }
+      const btnReset = document.getElementById("btnResetFilters");
+      if (btnReset) {
+        btnReset.addEventListener("click", () => {
+          quickFilter = "all";
+          searchQuery = "";
+          if (searchInput) searchInput.value = "";
+          if (btnClear) btnClear.classList.add("hidden");
+          renderFeed();
+        });
+      }
+      const mainEl = document.querySelector("main");
+      if (mainEl) {
+        mainEl.addEventListener("click", (e) => {
+          const saveBtn = e.target.closest("[data-action='toggle-save']");
+          if (saveBtn) {
+            const id = saveBtn.getAttribute("data-id");
+            if (savedIds.has(id)) {
+              savedIds.delete(id);
+              showToast("Eliminado de Guardados");
+            } else {
+              savedIds.add(id);
+              showToast("Guardado en ⭐ Favoritos");
+            }
+            renderKPIs();
+            if (currentTab === "feed") renderFeed();
+            if (currentTab === "saved") renderSaved();
+            return;
+          }
+          const copyBtn = e.target.closest("[data-action='copy']");
+          if (copyBtn) {
+            const id = copyBtn.getAttribute("data-id");
+            const n = newsItems.find(x => x.id === id);
+            if (n) {
+              const txt = `*${n.titular}* (${n.medio} - ${n.fecha})\n📝 ${n.resumen}\n🔗 ${n.url}`;
+              if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(txt).then(() => showToast("Copiado para WhatsApp"));
+              } else {
+                showToast("Listo para compartir");
+              }
+            }
+          }
+        });
+      }
+    }
+
+    // Immediate & Guaranteed Startup:
+    function startApp() {
+      renderAll();
+      initListeners();
+      syncFromGoogleSheets();
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", startApp);
+    } else {
+      startApp();
+    }
+  </script>
+</body>
+</html>
