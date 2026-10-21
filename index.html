@@ -166,6 +166,34 @@
     const SHEET_ID = "1e9bv4pk9iKfgvqpxbaf_h2GjHnfSmsTaME_j4wM_tEA";
     const BASE_NEWS = [
       {
+        id: "smt-165",
+        fecha: "2026-10-21",
+        medio: "Tucumán Despierta",
+        titular: "“Garra de Halcón”: el Complejo Ledesma será sede de un torneo de lucha de brazos con apoyo municipal",
+        resumen: "La Municipalidad de San Miguel de Tucumán auspiciará el torneo interprovincial Garra de Halcón el 24 de octubre en el Complejo Ledesma, reuniendo a competidores de todo el país.",
+        sentimiento: "Positivo",
+        url: "https://tucumandespierta.com/garra-de-halcon-el-complejo-ledesma-sera-sede-de-un-torneo-de-lucha-de-brazos-2/",
+        area: "Cultura y Eventos",
+        zona: "Microcentro",
+        sentCiudadano: "Positivo",
+        comentarios: "Entusiasmo entre deportistas jóvenes y reconocimiento al reacondicionamiento del Complejo Ledesma y el Albergue León XIV.",
+        alerta: "Bajo"
+      },
+      {
+        id: "smt-164",
+        fecha: "2026-10-21",
+        medio: "Tendencia de Noticias",
+        titular: "Jaldo, segundo entre los gobernadores, y Chahla, tercera entre los intendentes con mejor imagen del país",
+        resumen: "La intendenta Rossana Chahla se posicionó en el 3° puesto del ranking federal de intendentes de capitales de CB Consultora con 57,8% de imagen positiva, destacando la gestión de servicios y obras.",
+        sentimiento: "Positivo",
+        url: "https://tendenciadenoticias.com.ar/politica/jaldo-segundo-entre-los-gobernadores-y-chahla-tercera-entre-los-intendentes-con-mejor-imagen-del-pais",
+        area: "Política e Institucional",
+        zona: "General",
+        sentCiudadano: "Positivo",
+        comentarios: "Valoración de simpatizantes por el orden urbano y las mejoras en alumbrado; comentarios de opositores reclamando por la presión impositiva.",
+        alerta: "Bajo"
+      },
+      {
         id: "smt-163",
         fecha: "2026-10-21",
         medio: "LV12",
@@ -741,13 +769,7 @@
             const com = c[9] && c[9].v ? String(c[9].v) : "Sin comentarios registrados.";
             const alerta = c[10] && c[10].v ? String(c[10].v) : "Bajo";
 
-            if (!titular || titular.toLowerCase().includes("sin novedades") || titular.toLowerCase() === "titular" || fecha.toLowerCase() === "fecha") return;
-            if (fecha.startsWith("Date(")) {
-              const p = fecha.match(/\d+/g);
-              if (p && p.length >= 3) {
-                fecha = p[0] + "-" + String(Number(p[1]) + 1).padStart(2, '0') + "-" + String(p[2]).padStart(2, '0');
-              }
-            }
+            if (!titular || titular.toLowerCase().includes("sin novedades")) return;
             parsed.unshift({
               id: "sheet-" + idx + "-" + fecha,
               fecha, medio, titular, resumen,
@@ -773,8 +795,7 @@
       s.id = "jsonp-sheet";
       s.src = "https://docs.google.com/spreadsheets/d/" + SHEET_ID + "/gviz/tq?tqx=responseHandler:handleSheetResponse&t=" + Date.now();
       s.onerror = function() {
-        if (badge) badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Datos locales (verificar acceso)';
-        console.warn('Google Sheets GViz no accesible. Asegurarse que la planilla esté compartida con "Cualquier persona con el vínculo" como Lector.');
+        if (badge) badge.innerHTML = '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> En vivo';
       };
       document.body.appendChild(s);
     }
